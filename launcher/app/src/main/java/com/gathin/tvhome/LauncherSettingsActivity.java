@@ -37,6 +37,7 @@ public final class LauncherSettingsActivity extends Activity {
     private TextView advancedChoice;
     private TextView followThemeChoice;
     private TextView openOnStartChoice;
+    private TextView ambientLightChoice;
     private int columns;
     private int rowsBelowDock;
     private int dockOpacity;
@@ -60,6 +61,21 @@ public final class LauncherSettingsActivity extends Activity {
         dockOpacity = config.dockOpacity;
         animations = config.animations;
         advancedEffects = config.animations && config.advancedEffects;
+        ambientLightChoice = findViewById(R.id.ambientLightChoice);
+        ambientLightChoice.setVisibility(config.geometricGlow ? android.view.View.VISIBLE : android.view.View.GONE);
+        ambientLightChoice.setOnClickListener(v -> {
+            String[] modes = {"auto", "day", "night"};
+            String[] labels = getResources().getStringArray(R.array.ambient_light_modes);
+            String current = choices.getString(AmbientScene.LIGHT_KEY, "auto");
+            int checked = java.util.Arrays.asList(modes).indexOf(current);
+            new AlertDialog.Builder(this).setTitle(R.string.ambient_light)
+                    .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                        choices.edit().putString(AmbientScene.LIGHT_KEY, modes[which]).apply();
+                        setResult(RESULT_OK);
+                        dialog.dismiss();
+                        refresh();
+                    }).setNegativeButton(android.R.string.cancel, null).show();
+        });
 
         int[] ids = {R.id.columns4, R.id.columns5, R.id.columns6, R.id.columns7};
         for (int i = 0; i < ids.length; i++) {
@@ -140,7 +156,8 @@ public final class LauncherSettingsActivity extends Activity {
             if (!hasOnTvChoices()) return;
             choices.edit().remove("columns").remove(Config.ROWS_BELOW_DOCK_KEY).remove("animations")
                     .remove("advanced_effects").remove(Config.WALLPAPER_CHOICE_KEY)
-                    .remove(Config.DOCK_OPACITY_KEY).remove(OpenOnStart.KEY).commit();
+                    .remove(Config.DOCK_OPACITY_KEY).remove(OpenOnStart.KEY)
+                    .remove(AmbientScene.LIGHT_KEY).commit();
             Config current = Config.load(this);
             columns = current.columns;
             rowsBelowDock = current.rowsBelowDock;
@@ -277,6 +294,10 @@ public final class LauncherSettingsActivity extends Activity {
     }
 
     private void refresh() {
+        String mode = choices.getString(AmbientScene.LIGHT_KEY, "auto");
+        int index = "day".equals(mode) ? 1 : "night".equals(mode) ? 2 : 0;
+        ambientLightChoice.setText(getString(R.string.ambient_light_state,
+                getResources().getStringArray(R.array.ambient_light_modes)[index]));
         for (int i = 0; i < columnChoices.length; i++) {
             columnChoices[i].setSelected(columns == i + 4);
         }
@@ -305,7 +326,7 @@ public final class LauncherSettingsActivity extends Activity {
         return choices.contains("columns") || choices.contains(Config.ROWS_BELOW_DOCK_KEY)
                 || choices.contains("animations") || choices.contains("advanced_effects")
                 || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
-                || choices.contains(OpenOnStart.KEY);
+                || choices.contains(OpenOnStart.KEY) || choices.contains(AmbientScene.LIGHT_KEY);
     }
 
     private void open(Intent intent) {

@@ -55,6 +55,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         /** Called for a D-pad direction key on a tile. Return true when handled (focus stays put). */
         boolean onTileVerticalKey(int position, int keyCode);
+        boolean onTileShapeRequested(int position);
 
         void onLibraryRequested();
         void onLibraryFocused();
@@ -298,7 +299,9 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             // uniform_tiles draws the icon, so an app's banner is never loaded. A module card keeps its banner.
             if (!(uniformTiles && card == null)) {
                 banner = bundledBanner(appBanners.get(pkg));
-                if (banner == null) banner = iconTiles.contains(pkg) ? iconBanner(ri.loadIcon(pm)) : loadBanner(pm, ri);
+                if (banner == null && iconTiles.contains(pkg)) banner = iconBanner(ri.loadIcon(pm));
+                if (banner == null) banner = BrandedBanner.create(ctx, pkg, ri.loadIcon(pm));
+                if (banner == null) banner = loadBanner(pm, ri);
             }
             // The icon is only drawn (and sampled for the glow) when there is no banner, so a tile with a
             // banner skips loading and decoding it.
@@ -506,6 +509,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
         h.card.setOnClickListener(v -> launch(e));
         h.card.setOnLongClickListener(v -> {
+            int currentPosition = h.getBindingAdapterPosition();
+            if (currentPosition != RecyclerView.NO_POSITION && listener.onTileShapeRequested(currentPosition)) return true;
             if (tileMenu) {
                 int pos = h.getBindingAdapterPosition();
                 if (pos != RecyclerView.NO_POSITION) listener.onTileLongPress(pos, v);

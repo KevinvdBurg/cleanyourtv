@@ -1,0 +1,21 @@
+White brand glyphs are adapted from the Simple Icons SVG sources.
+https://github.com/simple-icons/simple-icons
+
+https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/googleplay.svg
+https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/netflix.svg
+https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/nordvpn.svg
+https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/spotify.svg
+https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/stremio.svg
+https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/twitch.svg
+https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/viaplay.svg
+https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/vlcmediaplayer.svg
+https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/youtube.svg
+
+The following marks come directly from the brands' websites. Original SVGs and
+source details are retained under launcher/artwork/brands/. They are not covered
+by the Simple Icons CC0 license above. White fills are used in the launcher.
+
+Dropout: https://www.dropout.tv/
+SVG: https://dropout-hub.cdn.prismic.io/dropout-hub/aK8ppmGNHVfTOX-v_Dropout_Logo_Bug_Black.svg
+SkyShowtime: https://www.skyshowtime.com/nl
+SVG: inline skyshowtime-wob-logo in the site's navigation.

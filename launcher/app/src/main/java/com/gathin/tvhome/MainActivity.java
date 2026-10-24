@@ -170,6 +170,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** The focus glow's colour while the cinematic shelf tints it, 0 for plain white glass. */
     private int glassAccent;
     private int ambientColor = -1;
+    private GeometricGlow geometricGlow;
+    private ShapeEditor shapeEditor;
     private ValueAnimator ambientAnimator;
     private boolean heroShown;
     private boolean animations;
@@ -367,6 +369,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             updateClockVisibility();
+            if (geometricGlow != null) geometricGlow.update();
         }
     };
     private final Runnable minuteTick = new Runnable() {
@@ -378,6 +381,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // signal level, so only it needs this minute's binder calls (about 7 ms on the UI thread).
             if (festive) updateWifiLabel();
             sky.update();
+            if (geometricGlow != null) geometricGlow.update();
             wallpaperPlayer.update();
             handler.postDelayed(this, MINUTE_MS);
         }
@@ -440,12 +444,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         glass.setStyle(cfg.glassStyle);
         if (festive) glass.setAccent(festival.accentColor());
         ambient = findViewById(R.id.ambient);
-        // The glow is one bitmap, so its alpha can be applied while drawing it. Otherwise every frame of
-        // a fade renders it into a full-screen offscreen buffer first.
+        // Fade the cached background directly, avoiding a full-screen compositing buffer on each frame.
         ambient.forceHasOverlappingRendering(false);
         ambientGlow = cfg.ambientGlow;
         appGlow = cfg.appGlow;
         if (!ambientGlow) ambient.setVisibility(View.GONE);
+        if (ambientGlow && cfg.geometricGlow) {
+            geometricGlow = new GeometricGlow(this);
+            ambient.setBackground(geometricGlow);
+        }
         heroName = findViewById(R.id.heroName);
         hero = findViewById(R.id.hero);
         // The hero is now a group (name, and the cinematic lines): without this every fade of the default
@@ -903,26 +910,19 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         return true;
     }
 
-    /**
-     * Home pressed while Home is already in front: singleTask delivers it here, then onResume runs.
-     * Back to the top with the first dock tile focused, like the stock launcher. Back from an app
-     * never comes this way, so returning to the app you left from is unchanged (#118).
-     */
+    /** Home returns to the last focused tile, including when it is pressed from another app. */
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         if (openLauncherSettingsIfAsked(intent)) return;
         if (openInputsIfAsked(intent)) return;
         if (intent == null || !intent.hasCategory(Intent.CATEGORY_HOME)) return;
-        grid.scrollToPosition(0);
-        lastFocused = 0;
-        lastFocusedKey = adapter.getItemCount() > 0 ? adapter.keyAt(0) : null;
+        if (shapeEditor != null) shapeEditor.dismiss();
         if (stopped) {
             tileRefresh.onHomeAgain();
         } else {
-            // Still on screen (the quick panel was over it, or Home was already in front): the tiles are current,
-            // so only go back to the first one; rebuilding would replay the entrance animation for nothing.
-            grid.post(() -> focusTile(0));
+            // The tiles are current, so restore focus without replaying their entrance animation.
+            grid.post(() -> focusTile(lastFocused));
         }
     }
 
@@ -987,6 +987,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         if (showStats) startStats();
         sky.update();
+        if (geometricGlow != null) geometricGlow.update();
         wallpaperPlayer.start();
         handler.postDelayed(minuteTick, MINUTE_MS);
         if (festive && diya != null) {
@@ -1169,6 +1170,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (cardPrompt != null) cardPrompt.dismiss();
         if (appLibrary != null) appLibrary.close();
         if (openPopup != null) openPopup.dismiss();
+        if (shapeEditor != null) shapeEditor.dismiss();
     }
 
     @Override
@@ -1625,6 +1627,30 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     @Override
+    public boolean onTileShapeRequested(int position) {
+        if (geometricGlow == null || reordering) return false;
+        stopAmbientAnimation();
+        ambient.animate().cancel();
+        String pkg = adapter.packageAt(position);
+        geometricGlow.setApp(pkg, adapter.ambientColorAt(position));
+        ambient.setAlpha(1f);
+        View[] previewLayers = {grid, glass, hero};
+        float[] previousAlpha = new float[previewLayers.length];
+        for (int i = 0; i < previewLayers.length; i++) {
+            View layer = previewLayers[i];
+            layer.animate().cancel();
+            previousAlpha[i] = layer.getAlpha();
+            layer.setAlpha(0);
+        }
+        shapeEditor = new ShapeEditor(this, geometricGlow, adapter.packageAt(position), adapter.labelAt(position), () -> {
+            for (int i = 0; i < previewLayers.length; i++) previewLayers[i].setAlpha(previousAlpha[i]);
+            shapeEditor = null;
+        });
+        shapeEditor.show();
+        return true;
+    }
+
+    @Override
     public void onTileFocused(int position, View card) {
         lastFocused = position;
         lastFocusedKey = adapter.keyAt(position);
@@ -1770,9 +1796,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 hero.setTranslationX(12 * density);
                 hero.animate().alpha(1f).translationX(0f).setDuration(200).start();
             }).start();
-            if (ambientGlow && advancedEffects) {
+            if (ambientGlow && advancedEffects && geometricGlow == null) {
                 transitionAmbient(color);
-            } else if (ambientGlow && color != ambientColor) {
+            } else if (ambientGlow && !ambientMatches(color)) {
                 ambient.animate().alpha(0.35f).setDuration(200).withEndAction(() -> {
                     setAmbient(color);
                     ambient.animate().alpha(1f).setDuration(500).start();
@@ -1928,6 +1954,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * so changing apps neither repaints it on the CPU (about 11 ms) nor uploads it again.
      */
     private void setAmbient(int color) {
+        if (geometricGlow != null) {
+            ambientColor = color;
+            String pkg = adapter.packageAt(lastFocused);
+            geometricGlow.setApp(pkg, color);
+            return;
+        }
         if (color == ambientColor && ambient.getBackground() != null) return;
         ambientColor = color;
         BitmapDrawable glow = (BitmapDrawable) ambient.getBackground();
@@ -1975,11 +2007,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         glow.setTint(0xFF000000 | color);
     }
 
+    private boolean ambientMatches(int color) {
+        return color == ambientColor && ambient.getBackground() != null
+                && (geometricGlow == null || geometricGlow.isApp(adapter.packageAt(lastFocused)));
+    }
+
     private void transitionAmbient(int color) {
         // A rapid focus change continues from the colour actually displayed on screen.
         stopAmbientAnimation();
         ambient.animate().cancel();
-        if (color == ambientColor) {
+        if (ambientMatches(color)) {
             ambient.animate().alpha(1f).setDuration(180).start();
             return;
         }
@@ -2016,7 +2053,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             ambient.setAlpha(1f);
             return;
         }
-        if (color == ambientColor && ambient.getBackground() != null) {
+        if (ambientMatches(color)) {
             ambient.animate().alpha(1f).setDuration(300).start();
             return;
         }

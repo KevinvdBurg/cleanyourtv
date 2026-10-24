@@ -150,6 +150,7 @@ A new key needs one there in the same pull request.
 | `ambient_glow` | bool | The glow behind the dock in the focused app's colour (`true` by default); `false` keeps only `background_color` or the wallpaper, e.g. for a calm photo background |
 | `app_glow` | bool | The focus highlight glows in the focused app's colour on every tile, as `cinematic_home` does for the dock (`false` by default) |
 | `fade_rows` | bool | The rows fade out as they scroll up under the clock instead of being cut off at a hard line; the wallpaper or sky shows through. The grid then draws into a hardware layer (about 6 MB of graphics memory at 1080p) (`false` by default) |
+| `geometric_glow` | bool | Draw app-specific ribbons, stepped frames, diamonds or arcs over the glow, with solar day/night colours. Requires `ambient_glow`. |
 
 ## Wallpapers
 
@@ -207,8 +208,8 @@ Android 10 is the known case. The default, `false`, keeps the normal motion.
 clock: night blues, a soft blue day, then a warm horizon that peaks at seven in the evening.
 The glow near the bottom edge travels from left to right with the sun. The colours stay dark so the
 white clock, the hero name and the dock band keep their contrast. It is drawn as one 480×270 bitmap
-and redrawn once a minute, never animated, so even a 1 GB TV has nothing to keep up with. `0` keeps
-the plain background; the default is off (the reference launcher looks exactly as before).
+and redrawn once a minute, never animated. `0` hides this sky layer, which is off by default.
+The focused-app glow is controlled separately by `ambient_glow` and `geometric_glow`.
 
 ```json
 { "sky_intensity": 60 }
@@ -218,6 +219,27 @@ That evening peak is a fixed reference day, sunrise 07:30 and sunset 19:00 on th
 launcher follows the real sun only when `latitude` and `longitude` are set in
 `launcher/app/src/main/res/values/config.xml`, which is a build setting a theme cannot carry: see
 [docs/sky.md](../docs/sky.md) for the two lines and what still falls back.
+
+## Geometric glow
+
+With `"geometric_glow": true`, the focused app gets a flat composition of a few simple shapes taken from its
+own mark or what the app is for: YouTube's screen, play button and progress bar, Spotify's disc and arcs,
+VLC's striped cone as a funnel that turns any file into a play button, a gear for Settings. The app's banner
+supplies the colour, mixed into three opaque tones, so overlapping shapes never blend into in-between colours.
+Apps without a composition of their own get one of nine plain ones, the same one every time. The shapes are
+vector paths, defined in `AppShapes.java`. Only the soft glow behind them is a small texture, redrawn on focus
+or solar light changes. There are no wallpaper files, blur or network requests. `latitude` and `longitude` in
+`config.xml` place sunrise and sunset on the local clock, including daylight saving time. Launcher settings
+offers Automatic, Day and Night light modes. Automatic blends through 90 minutes around sunrise and sunset.
+
+Set `"geometric_glow": false` to use the original plain app-colour glow.
+
+Hold OK on an app tile to change that app's Size (50% to 150%) and Intensity (0% to 150%). Save keeps
+them for the app's package. Cancel or Back discards the preview.
+
+To add or change a composition, edit `AppShapes.java` and run `launcher/preview/run.sh`. It draws every
+composition in a mock of Home on the computer, without a TV, writes day and night contact sheets to
+`launcher/build/shape-preview/`, and fails if a shape reaches the clock, the Settings button or the dock.
 
 ## Adding a theme
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shape_editor_title">App shape</string>
+    <string name="shape_editor_help">Left / Right to adjust. Preview before saving.</string>
+    <string name="shape_size_value">‹  Size   %1$d%%  ›</string>
+    <string name="shape_intensity_value">‹  Intensity   %1$d%%  ›</string>
+    <string name="shape_reset">Reset this app</string>
+    <string name="shape_save">Save</string>
+    <string name="shape_app_info">App info</string>
+    <string name="ambient_light">Ambient light</string>
+    <string name="ambient_light_state">Ambient light: %1$s</string>
+    <string-array name="ambient_light_modes">
+        <item>Automatic, sunrise and sunset</item>
+        <item>Day</item>
+        <item>Night</item>
+    </string-array>
+</resources>
