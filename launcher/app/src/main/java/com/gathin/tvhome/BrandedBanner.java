@@ -33,7 +33,7 @@ final class BrandedBanner extends Drawable {
             case "com.collegehumor.chdropout":
                 top = 0xFFFFCE45; bottom = 0xFFC17A0C; mark = R.drawable.brand_dropout; break;
             case "com.formulaone.production":
-                top = 0xFFFF644E; bottom = 0xFFAC102A; break;
+                top = 0xFFFF644E; bottom = 0xFFAC102A; mark = R.drawable.brand_f1; break;
             case "com.brouken.player":
                 top = 0xFF49E3B4; bottom = 0xFF0E8976; break;
             case "com.netflix.ninja":
@@ -41,7 +41,7 @@ final class BrandedBanner extends Drawable {
             case "com.nordvpn.android":
                 top = 0xFF65ACFF; bottom = 0xFF2850BD; mark = R.drawable.brand_nordvpn; break;
             case "nl.uitzendinggemist":
-                top = 0xFFFFB24C; bottom = 0xFFD45C12; break;
+                top = 0xFFFFB24C; bottom = 0xFFD45C12; mark = R.drawable.brand_npostart; break;
             case "com.android.vending":
                 top = 0xFF4FE2BD; bottom = 0xFF15888E; mark = R.drawable.brand_googleplay; break;
             case "com.android.tv.settings":
@@ -54,6 +54,16 @@ final class BrandedBanner extends Drawable {
                 top = 0xFFF27ACC; bottom = 0xFF7C2EC4; mark = R.drawable.brand_viaplay; break;
             case "org.videolan.vlc":
                 top = 0xFFFFBC53; bottom = 0xFFDA630F; mark = R.drawable.brand_vlcmediaplayer; break;
+            case "com.ziggo.tv":
+                top = 0xFFFF9443; bottom = 0xFFD94800; mark = R.drawable.brand_ziggo; break;
+            case "nl.rtl.videoland.v2":
+                top = 0xFFFF7080; bottom = 0xFFCC1636; mark = R.drawable.brand_videoland; break;
+            case "com.wbd.stream": case "com.wbd.hbomax":
+                top = 0xFF34406B; bottom = 0xFF0D1226; mark = R.drawable.brand_hbomax; break;
+            case "com.disney.disneyplus":
+                top = 0xFF1BA4B8; bottom = 0xFF07304D; mark = R.drawable.brand_disneyplus; break;
+            case "com.amazon.amazonvideo.livingroom":
+                top = 0xFF2BB7F2; bottom = 0xFF0766C9; mark = R.drawable.brand_primevideo; break;
             default:
                 return null;
         }

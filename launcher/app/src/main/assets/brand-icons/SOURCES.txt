@@ -1,6 +1,7 @@
 White brand glyphs are adapted from the Simple Icons SVG sources.
 https://github.com/simple-icons/simple-icons
 
+https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/f1.svg
 https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/googleplay.svg
 https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/netflix.svg
 https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/nordvpn.svg
@@ -19,3 +20,15 @@ Dropout: https://www.dropout.tv/
 SVG: https://dropout-hub.cdn.prismic.io/dropout-hub/aK8ppmGNHVfTOX-v_Dropout_Logo_Bug_Black.svg
 SkyShowtime: https://www.skyshowtime.com/nl
 SVG: inline skyshowtime-wob-logo in the site's navigation.
+Ziggo: https://www.ziggo.nl/
+SVG: https://vodafoneziggo.scene7.com/is/content/vodafoneziggo/ziggo-logo-orange-v1?fmt=svg
+Videoland: https://www.videoland.com/
+SVG: inline "Videoland logo" in the site's header.
+NPO Start: https://npo.nl/start
+SVG: https://npo.nl/start/safari-pinned-tab.svg
+
+The following marks are public domain text logos on Wikimedia Commons (trademarked).
+HBO Max: https://commons.wikimedia.org/wiki/File:HBO_Max_(2025).svg
+Prime Video: https://commons.wikimedia.org/wiki/File:Prime_Video_logo_(2024).svg
+
+Disney+: https://www.svgrepo.com/svg/504281/disneyplus
